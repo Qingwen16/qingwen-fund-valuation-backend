@@ -1,5 +1,7 @@
 package com.wen;
 
+import org.mybatis.spring.annotation.MapperScan;
+import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
@@ -7,9 +9,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @Date: 2026/3/9 22:53
  */
 @SpringBootApplication
+@MapperScan("com.wen.mapper")
 public class WenApplication {
 
     public static void main(String[] args) {
-        System.out.println("Hello and welcome!");
+        SpringApplication.run(WenApplication.class, args);
     }
+
 }
