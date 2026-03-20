@@ -2,6 +2,11 @@
 server:
   port: 8080
 
+wx:
+  miniapp:
+    app-id: your_wx_appid        # 替换为你的小程序 AppID
+    app-secret: your_wx_secret   # 替换为你的小程序 AppSecret
+
 spring:
   # 数据源配置
   datasource:
