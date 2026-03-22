@@ -8,17 +8,15 @@ import lombok.Data;
 import java.math.BigDecimal;
 
 /**
- * @author : rjw
- * @date : 2026-03-12
+ * @Author : 青灯文案
+ * @Date: 2026/3/22 12:03
+ * 持有基金（实际持仓）
  */
-@TableName("t_user_fund")
 @Data
-public class UserFund {
+@TableName("t_fund_holding")
+public class FundHolding {
 
-    /**
-     * ID
-     */
-    @TableId(type = IdType.INPUT)
+    @TableId(type = IdType.AUTO)
     private Long id;
 
     /**
@@ -27,29 +25,19 @@ public class UserFund {
     private Long userId;
 
     /**
+     * 账户ID
+     */
+    private Long accountId;
+
+    /**
      * 基金代码
      */
     private String code;
 
     /**
-     * 是否持有
-     */
-    private Integer holding;
-
-    /**
-     * 是否自选
-     */
-    private Integer selection;
-
-    /**
      * 持有份额
      */
-    private BigDecimal amount;
-
-    /**
-     * 逻辑删除
-     */
-    private Integer deleted;
+    private BigDecimal shares;
 
     /**
      * 修改时间

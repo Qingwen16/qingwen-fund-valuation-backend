@@ -1,8 +1,6 @@
 package com.wen.service;
 
-import com.wen.model.vo.UserFundRequest;
-import com.wen.model.vo.UserFundResponse;
-import com.wen.model.vo.UserIdRequest;
+import com.wen.model.vo.*;
 
 import java.util.List;
 
@@ -15,23 +13,31 @@ public interface UserFundService {
     /**
      * 获取用户所有自选基金列表
      */
-    List<UserFundResponse> getUserSelectionFunds(UserIdRequest request);
+    List<FundWatchlistResp> getUserWatchlistFunds(UserIdRequest request);
 
     /**
      * 获取用户所有持有基金列表
      */
-    List<UserFundResponse> getUserHoldingFunds(UserIdRequest request);
+    List<FundHoldingResp> getUserHoldingFunds(DecreasePositionRequest request);
 
     /**
      * 添加自选基金
      */
-    void addSelectionFund(UserFundRequest request);
+    void addWatchlistFund(FundWatchlistReq request);
 
     /**
      * 新增持有基金数据
      */
-    void addHoldingFund(UserFundRequest request);
+    void addHoldingFund(FundHoldingReq request);
 
+    /**
+     * 新增持有基金数据
+     */
+    void increaseHoldingFund(UptFundRequest request);
 
+    /**
+     * 减少持有基金数据
+     */
+    void decreaseHoldingFund(UptFundRequest request);
 
 }

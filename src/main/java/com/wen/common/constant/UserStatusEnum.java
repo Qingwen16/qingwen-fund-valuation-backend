@@ -11,13 +11,13 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum UserStatusEnum {
 
-    // 用户状态正常
+    /**
+     * UserStatusEnum
+     */
     NORMAL(0, "正常"),
 
-    // 用户状态禁用
     DISABLED(1, "禁用"),
 
-    // 用户状态注销
     CANCELLED(2, "注销");
 
     private final int code;
