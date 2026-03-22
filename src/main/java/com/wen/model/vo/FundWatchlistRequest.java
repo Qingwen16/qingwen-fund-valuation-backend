@@ -2,14 +2,12 @@ package com.wen.model.vo;
 
 import lombok.Data;
 
-import java.math.BigDecimal;
-
 /**
  * @Author : 青灯文案
- * @Date: 2026/3/22 12:48
+ * @Date: 2026/3/22 13:01
  */
 @Data
-public class FundWatchlistResp {
+public class FundWatchlistRequest {
 
     /**
      * 用户ID

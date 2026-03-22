@@ -4,7 +4,6 @@ import com.wen.common.exception.BusinessException;
 import com.wen.common.response.Response;
 import com.wen.model.entity.UserAccount;
 import com.wen.model.entity.UserInfo;
-import com.wen.model.vo.DecreasePositionRequest;
 import com.wen.model.vo.UserIdRequest;
 import com.wen.service.UserInfoService;
 import lombok.RequiredArgsConstructor;
@@ -66,7 +65,7 @@ public class UserInfoController {
      * 根据用户ID删除用户账户信息
      */
     @PostMapping("/deleteUserAccount")
-    public Response<?> deleteUserAccount(@RequestBody DecreasePositionRequest request) {
+    public Response<?> deleteUserAccount(@RequestBody PositionDecreaseRequest request) {
         if (request == null) {
             throw new BusinessException("输入参数不能为空");
         }

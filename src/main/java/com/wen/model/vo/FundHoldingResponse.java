@@ -6,10 +6,10 @@ import java.math.BigDecimal;
 
 /**
  * @Author : 青灯文案
- * @Date: 2026/3/22 13:01
+ * @Date: 2026/3/22 12:48
  */
 @Data
-public class FundHoldingReq {
+public class FundHoldingResponse {
 
     /**
      * 用户ID

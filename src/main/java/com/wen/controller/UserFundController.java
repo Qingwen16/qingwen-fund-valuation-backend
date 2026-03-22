@@ -27,11 +27,11 @@ public class UserFundController {
      * 获取用户所有自选基金列表
      */
     @PostMapping("/getUserWatchlistFunds")
-    public Response<List<FundWatchlistResp>> getUserWatchlistFunds(@RequestBody UserIdRequest request) {
+    public Response<List<FundWatchlistResponse>> getUserWatchlistFunds(@RequestBody UserIdRequest request) {
         if (request == null) {
             throw new BusinessException("输入参数不能为空");
         }
-        List<FundWatchlistResp> responses = userFundService.getUserWatchlistFunds(request);
+        List<FundWatchlistResponse> responses = userFundService.getUserWatchlistFunds(request);
         return Response.success(responses);
     }
 
@@ -39,11 +39,11 @@ public class UserFundController {
      * 获取用户所有持有基金列表
      */
     @PostMapping("/getUserHoldingFunds")
-    public Response<List<FundHoldingResp>> getUserHoldingFunds(@RequestBody DecreasePositionRequest request) {
+    public Response<List<FundHoldingResponse>> getUserHoldingFunds(@RequestBody AccountIdRequest request) {
         if (request == null) {
             throw new BusinessException("输入参数不能为空");
         }
-        List<FundHoldingResp> responses = userFundService.getUserHoldingFunds(request);
+        List<FundHoldingResponse> responses = userFundService.getUserHoldingFunds(request);
         return Response.success(responses);
     }
 
@@ -51,7 +51,7 @@ public class UserFundController {
      * 新增自选基金数据
      */
     @PostMapping("/addWatchlistFund")
-    public Response<?> addWatchlistFund(@RequestBody FundWatchlistReq request) {
+    public Response<?> addWatchlistFund(@RequestBody FundWatchlistRequest request) {
         if (request == null) {
             throw new BusinessException("输入参数不能为空");
         }
@@ -63,7 +63,7 @@ public class UserFundController {
      * 新增持有基金数据
      */
     @PostMapping("/addHoldingFund")
-    public Response<?> addHoldingFund(@RequestBody FundHoldingReq request) {
+    public Response<?> addHoldingFund(@RequestBody FundHoldingRequest request) {
         if (request == null) {
             throw new BusinessException("输入参数不能为空");
         }
@@ -74,24 +74,24 @@ public class UserFundController {
     /**
      * 持有基金加仓数据
      */
-    @PostMapping("/increaseHoldingFund")
-    public Response<?> increaseHoldingFund(@RequestBody UptFundRequest request) {
+    @PostMapping("/increaseFundPosition")
+    public Response<?> increaseFundPosition(@RequestBody PositionUpdateRequest request) {
         if (request == null) {
             throw new BusinessException("输入参数不能为空");
         }
-        userFundService.increaseHoldingFund(request);
+        userFundService.increaseFundPosition(request);
         return Response.success();
     }
 
     /**
      * 持有基金减仓数据
      */
-    @PostMapping("/decreaseHoldingFund")
-    public Response<?> decreaseHoldingFund(@RequestBody UptFundRequest request) {
+    @PostMapping("/decreaseFundPosition")
+    public Response<?> decreaseFundPosition(@RequestBody PositionUpdateRequest request) {
         if (request == null) {
             throw new BusinessException("输入参数不能为空");
         }
-        userFundService.decreaseHoldingFund(request);
+        userFundService.decreaseFundPosition(request);
         return Response.success();
     }
 }

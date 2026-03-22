@@ -9,15 +9,17 @@ import java.math.BigDecimal;
  * @Date: 2026/3/22 11:13
  */
 @Data
-public class IncreasePositionRequest {
+public class PositionUpdateRequest {
 
     /**
      * 用户ID
      */
     private Long userId;
 
-
-
+    /**
+     * 账户ID
+     */
+    private Long accountId;
 
     /**
      * 基金代码
@@ -27,7 +29,12 @@ public class IncreasePositionRequest {
     /**
      * 持有份额
      */
-    private BigDecimal amount;
+    private BigDecimal shares;
+
+    /**
+     * 基金金额
+     */
+    private BigDecimal price;
 
     /**
      * 基金金额
