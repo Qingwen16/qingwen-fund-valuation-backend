@@ -16,10 +16,7 @@ import lombok.Data;
 @Data
 public class UserInfo {
 
-    /**
-     * ID
-     */
-    @TableId(type = IdType.INPUT)
+    @TableId(type = IdType.AUTO)
     private Long id;
 
     /**

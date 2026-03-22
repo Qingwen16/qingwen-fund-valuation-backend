@@ -2,7 +2,9 @@ package com.wen.controller;
 
 import com.wen.common.exception.BusinessException;
 import com.wen.common.response.Response;
+import com.wen.model.entity.UserAccount;
 import com.wen.model.entity.UserInfo;
+import com.wen.model.vo.DecreasePositionRequest;
 import com.wen.model.vo.UserIdRequest;
 import com.wen.service.UserInfoService;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +12,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 /**
  * @author : rjw
@@ -38,11 +42,35 @@ public class UserInfoController {
      * 根据用户ID获取用户数据
      */
     @PostMapping("/deleteUserInfo")
-    public Response<UserInfo> deleteUserInfo(@RequestBody UserIdRequest request) {
+    public Response<?> deleteUserInfo(@RequestBody UserIdRequest request) {
         if (request == null) {
             throw new BusinessException("输入参数不能为空");
         }
         userInfoService.deleteUserInfo(request);
+        return Response.success();
+    }
+
+    /**
+     * 根据用户ID获取用户账户信息
+     */
+    @PostMapping("/queryUserAccount")
+    public Response<List<UserAccount>> queryUserAccount(@RequestBody UserIdRequest request) {
+        if (request == null) {
+            throw new BusinessException("输入参数不能为空");
+        }
+        List<UserAccount> userAccounts = userInfoService.queryUserAccount(request);
+        return Response.success(userAccounts);
+    }
+
+    /**
+     * 根据用户ID删除用户账户信息
+     */
+    @PostMapping("/deleteUserAccount")
+    public Response<?> deleteUserAccount(@RequestBody DecreasePositionRequest request) {
+        if (request == null) {
+            throw new BusinessException("输入参数不能为空");
+        }
+        userInfoService.deleteUserAccount(request);
         return Response.success();
     }
 

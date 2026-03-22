@@ -1,5 +1,6 @@
 package com.wen.config;
 
+import com.wen.interceptor.RequestIdInterceptor;
 import com.wen.interceptor.TokenInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
@@ -16,6 +17,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     private final TokenInterceptor tokenInterceptor;
 
+    private final RequestIdInterceptor requestIdInterceptor;
+
     /**
      * 拦截所有 /api/ 接口
      * 排除登录接口
@@ -25,5 +28,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
         registry.addInterceptor(tokenInterceptor)
                 .addPathPatterns("/api/**")
                 .excludePathPatterns("/api/wx/login");
+        registry.addInterceptor(requestIdInterceptor)
+                .addPathPatterns("/api/**");
     }
 }

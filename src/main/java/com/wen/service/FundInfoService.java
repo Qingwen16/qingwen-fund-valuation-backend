@@ -1,7 +1,6 @@
 package com.wen.service;
 
-import com.wen.model.dto.FundInfoDto;
-import com.wen.model.vo.UserFundRequest;
+import com.wen.model.entity.FundInfo;
 
 /**
  * @author : rjw
@@ -12,11 +11,11 @@ public interface FundInfoService {
     /**
      * 新增基金信息
      */
-    void insertFundInfo(FundInfoDto request);
+    void insertFundInfo(FundInfo request);
 
     /**
      * 新增基金信息
      */
-    void insertFundInfo(UserFundRequest request);
+    void deleteFundInfo(String code);
 
 }

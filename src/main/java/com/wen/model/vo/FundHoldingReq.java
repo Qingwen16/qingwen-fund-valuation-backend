@@ -5,16 +5,21 @@ import lombok.Data;
 import java.math.BigDecimal;
 
 /**
- * @author : rjw
- * @date : 2026-03-20
+ * @Author : 青灯文案
+ * @Date: 2026/3/22 13:01
  */
 @Data
-public class UserFundResponse {
+public class FundHoldingReq {
 
     /**
      * 用户ID
      */
     private Long userId;
+
+    /**
+     * 账户ID
+     */
+    private Long accountId;
 
     /**
      * 基金名字
@@ -25,16 +30,6 @@ public class UserFundResponse {
      * 基金代码
      */
     private String code;
-
-    /**
-     * 是否持有
-     */
-    private Integer holding;
-
-    /**
-     * 是否自选
-     */
-    private Integer selection;
 
     /**
      * 基金类型
@@ -54,8 +49,6 @@ public class UserFundResponse {
     /**
      * 持有份额
      */
-    private BigDecimal amount;
+    private BigDecimal shares;
 
 }
-
-

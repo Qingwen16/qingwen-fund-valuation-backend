@@ -6,20 +6,21 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 /**
- * @author : rjw
- * @date : 2026-03-12
+ * @Author : 青灯文案
+ * @Date: 2026/3/22 12:04
+ * 自选基金（仅收藏）
  */
-@TableName("t_fund_info")
 @Data
-public class FundInfo {
+@TableName("t_fund_watchlist")
+public class FundWatchlist {
 
     @TableId(type = IdType.AUTO)
     private Long id;
 
     /**
-     * 基金名字
+     * 用户ID
      */
-    private String name;
+    private Long userId;
 
     /**
      * 基金代码
@@ -27,22 +28,7 @@ public class FundInfo {
     private String code;
 
     /**
-     * 基金类型
-     */
-    private String type;
-
-    /**
-     * 基金公司
-     */
-    private String company;
-
-    /**
-     * 基金版块
-     */
-    private String section;
-
-    /**
-     * 更新时间
+     * 创建时间
      */
     private Long createTime;
 
