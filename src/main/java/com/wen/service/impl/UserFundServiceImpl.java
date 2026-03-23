@@ -1,6 +1,7 @@
 package com.wen.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.wen.common.exception.BusinessException;
 import com.wen.mapper.FundHoldingMapper;
 import com.wen.mapper.FundInfoMapper;
@@ -44,7 +45,7 @@ public class UserFundServiceImpl implements UserFundService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public List<FundWatchlistResp> getUserWatchlistFunds(UserIdRequest request) {
+    public List<FundWatchlistResponse> getUserWatchlistFunds(UserIdRequest request) {
         // 1. 获取用户自选基金
         if (request.getUserId() == null) {
             throw new BusinessException("[GetUserWatchlistFunds]: 输入参数用户ID为空");
@@ -59,17 +60,17 @@ public class UserFundServiceImpl implements UserFundService {
         List<FundInfo> fundInfoList = fundInfoMapper.selectList(new LambdaQueryWrapper<FundInfo>()
                 .in(FundInfo::getCode, codeSet));
         // 5. 构建基金信息
-        List<FundWatchlistResp> responseList = buildUserWatchlistFunds(watchlistList, fundInfoList);
+        List<FundWatchlistResponse> responseList = buildUserWatchlistFunds(watchlistList, fundInfoList);
         log.info("获取用户自选基金: 基金数量: [{}]", responseList.size());
         return responseList;
     }
 
-    private List<FundWatchlistResp> buildUserWatchlistFunds(List<FundWatchlist> watchlistList, List<FundInfo> fundInfoList) {
-        List<FundWatchlistResp> responseList = new ArrayList<>();
+    private List<FundWatchlistResponse> buildUserWatchlistFunds(List<FundWatchlist> watchlistList, List<FundInfo> fundInfoList) {
+        List<FundWatchlistResponse> responseList = new ArrayList<>();
         for (FundWatchlist watchlist : watchlistList) {
             for (FundInfo fundInfo : fundInfoList) {
                 if (Objects.equals(fundInfo.getCode(), watchlist.getCode())) {
-                    FundWatchlistResp resp = new FundWatchlistResp();
+                    FundWatchlistResponse resp = new FundWatchlistResponse();
                     resp.setUserId(watchlist.getUserId());
                     resp.setName(fundInfo.getName());
                     resp.setCode(fundInfo.getCode());
@@ -88,7 +89,7 @@ public class UserFundServiceImpl implements UserFundService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public List<FundHoldingResp> getUserHoldingFunds(DecreasePositionRequest request) {
+    public List<FundHoldingResponse> getUserHoldingFunds(AccountIdRequest request) {
         // 1. 校验用户账户信息
         if (request.getUserId() == null || request.getAccountId() == null) {
             throw new BusinessException("[GetUserHoldingFunds]: 输入参数用户ID为空 或 账户ID为空");
@@ -104,17 +105,17 @@ public class UserFundServiceImpl implements UserFundService {
         List<FundInfo> fundInfoList = fundInfoMapper.selectList(new LambdaQueryWrapper<FundInfo>()
                 .in(FundInfo::getCode, codeSet));
         // 5. 构建基金信息
-        List<FundHoldingResp> responseList = buildUserHoldingFunds(holdingList, fundInfoList);
+        List<FundHoldingResponse> responseList = buildUserHoldingFunds(holdingList, fundInfoList);
         log.info("获取用户持有基金: 基金数量: [{}]", responseList.size());
         return responseList;
     }
 
-    private List<FundHoldingResp> buildUserHoldingFunds(List<FundHolding> holdingList, List<FundInfo> fundInfoList) {
-        List<FundHoldingResp> responseList = new ArrayList<>();
+    private List<FundHoldingResponse> buildUserHoldingFunds(List<FundHolding> holdingList, List<FundInfo> fundInfoList) {
+        List<FundHoldingResponse> responseList = new ArrayList<>();
         for (FundHolding holding : holdingList) {
             for (FundInfo fundInfo : fundInfoList) {
                 if (Objects.equals(fundInfo.getCode(), holding.getCode())) {
-                    FundHoldingResp resp = new FundHoldingResp();
+                    FundHoldingResponse resp = new FundHoldingResponse();
                     resp.setUserId(holding.getUserId());
                     resp.setAccountId(holding.getAccountId());
                     resp.setName(fundInfo.getName());
@@ -135,7 +136,7 @@ public class UserFundServiceImpl implements UserFundService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void addWatchlistFund(FundWatchlistReq request) {
+    public void addWatchlistFund(FundWatchlistRequest request) {
         if (request.getUserId() == null || request.getCode() == null) {
             throw new BusinessException("AddSelectionFund：输入参数用户ID为空或者基金code为空");
         }
@@ -170,7 +171,7 @@ public class UserFundServiceImpl implements UserFundService {
      * 添加持有基金
      */
     @Override
-    public void addHoldingFund(FundHoldingReq request) {
+    public void addHoldingFund(FundHoldingRequest request) {
         if (request.getUserId() == null|| request.getCode() == null || request.getShares() == null) {
             log.error("AddHoldingFund：输入参数: 用户ID为空 或 基金code为空 或 基金份额为空, [{}]",  request);
             throw new BusinessException("AddHoldingFund：输入参数: 用户ID为空 或 基金code为空 或 基金份额为空");
@@ -207,13 +208,44 @@ public class UserFundServiceImpl implements UserFundService {
     }
 
     @Override
-    public void increaseHoldingFund(UptFundRequest request) {
+    public void increaseFundPosition(PositionUpdateRequest request) {
+        // 1. 验证参数
+        checkPositionUpdateParam(request);
+
+        // 获取实时基金价格
+        if (request.getShares() != null) {
+            LambdaUpdateWrapper<FundHolding> wrapper = new LambdaUpdateWrapper<>();
+            wrapper.eq(FundHolding::getUserId, request.getUserId());
+            wrapper.eq(FundHolding::getAccountId, request.getAccountId());
+            wrapper.eq(FundHolding::getCode, request.getCode());
+            wrapper.set(FundHolding::getShares, request.getShares());
+            wrapper.set(FundHolding::getUpdateTime, System.currentTimeMillis());
+            fundHoldingMapper.update(wrapper);
+        }
 
     }
 
     @Override
-    public void decreaseHoldingFund(UptFundRequest request) {
+    public void decreaseFundPosition(PositionUpdateRequest request) {
 
     }
 
+    private void checkPositionUpdateParam(PositionUpdateRequest request){
+        if (request.getUserId() == null) {
+            log.error("AddHoldingFund：输入参数: 用户ID为空, [{}]",  request);
+            throw new BusinessException("AddHoldingFund：输入参数: 用户ID为空");
+        }
+        if (request.getAccountId() == null) {
+            log.error("AddHoldingFund：输入参数: 账户ID为空, [{}]",  request);
+            throw new BusinessException("AddHoldingFund：输入参数: 账户ID为空");
+        }
+        if (request.getCode() == null) {
+            log.error("AddHoldingFund：输入参数: 基金code为空, [{}]",  request);
+            throw new BusinessException("AddHoldingFund：输入参数: 基金code为空");
+        }
+        if (request.getShares() == null) {
+            log.error("AddHoldingFund：输入参数: 基金份额小于等于0, [{}]",  request);
+            throw new BusinessException("AddHoldingFund：输入参数: 基金份额小于等于0");
+        }
+    }
 }

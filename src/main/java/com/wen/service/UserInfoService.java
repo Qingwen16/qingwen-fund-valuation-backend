@@ -2,7 +2,6 @@ package com.wen.service;
 
 import com.wen.model.entity.UserAccount;
 import com.wen.model.entity.UserInfo;
-import com.wen.model.vo.DecreasePositionRequest;
 import com.wen.model.vo.UserIdRequest;
 
 import java.util.List;
@@ -31,5 +30,5 @@ public interface UserInfoService {
     /**
      * 删除用户账户信息
      */
-    void deleteUserAccount(DecreasePositionRequest request);
+    void deleteUserAccount(PositionDecreaseRequest request);
 }

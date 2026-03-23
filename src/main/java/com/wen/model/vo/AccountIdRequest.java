@@ -4,19 +4,19 @@ import lombok.Data;
 
 /**
  * @Author : 青灯文案
- * @Date: 2026/3/22 11:26
+ * @Date: 2026/3/22 17:27
  */
 @Data
-public class DecreasePositionRequest {
+public class AccountIdRequest {
 
     /**
      * 用户ID
      */
-    private String userId;
+    private Long userId;
 
     /**
      * 账户ID
      */
-    private String accountId;
+    private Long accountId;
 
 }

@@ -6,7 +6,6 @@ import com.wen.mapper.UserAccountMapper;
 import com.wen.mapper.UserInfoMapper;
 import com.wen.model.entity.UserAccount;
 import com.wen.model.entity.UserInfo;
-import com.wen.model.vo.DecreasePositionRequest;
 import com.wen.model.vo.UserIdRequest;
 import com.wen.service.UserInfoService;
 import lombok.RequiredArgsConstructor;
@@ -60,7 +59,7 @@ public class UserInfoServiceImpl implements UserInfoService {
     }
 
     @Override
-    public void deleteUserAccount(DecreasePositionRequest request) {
+    public void deleteUserAccount(PositionDecreaseRequest request) {
         if (request.getUserId() == null || request.getAccountId() == null) {
             throw new BusinessException("输入参数的用户ID为空");
         }

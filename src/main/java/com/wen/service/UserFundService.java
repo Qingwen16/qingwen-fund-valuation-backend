@@ -13,31 +13,31 @@ public interface UserFundService {
     /**
      * 获取用户所有自选基金列表
      */
-    List<FundWatchlistResp> getUserWatchlistFunds(UserIdRequest request);
+    List<FundWatchlistResponse> getUserWatchlistFunds(UserIdRequest request);
 
     /**
      * 获取用户所有持有基金列表
      */
-    List<FundHoldingResp> getUserHoldingFunds(DecreasePositionRequest request);
+    List<FundHoldingResponse> getUserHoldingFunds(AccountIdRequest request);
 
     /**
      * 添加自选基金
      */
-    void addWatchlistFund(FundWatchlistReq request);
+    void addWatchlistFund(FundWatchlistRequest request);
 
     /**
      * 新增持有基金数据
      */
-    void addHoldingFund(FundHoldingReq request);
+    void addHoldingFund(FundHoldingRequest request);
 
     /**
      * 新增持有基金数据
      */
-    void increaseHoldingFund(UptFundRequest request);
+    void increaseFundPosition(PositionUpdateRequest request);
 
     /**
      * 减少持有基金数据
      */
-    void decreaseHoldingFund(UptFundRequest request);
+    void decreaseFundPosition(PositionUpdateRequest request);
 
 }

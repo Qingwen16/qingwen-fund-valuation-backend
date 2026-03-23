@@ -2,24 +2,17 @@ package com.wen.model.vo;
 
 import lombok.Data;
 
-import java.math.BigDecimal;
-
 /**
  * @Author : 青灯文案
  * @Date: 2026/3/22 12:48
  */
 @Data
-public class FundHoldingResp {
+public class FundWatchlistResponse {
 
     /**
      * 用户ID
      */
     private Long userId;
-
-    /**
-     * 账户ID
-     */
-    private Long accountId;
 
     /**
      * 基金名字
@@ -45,10 +38,5 @@ public class FundHoldingResp {
      * 基金版块
      */
     private String section;
-
-    /**
-     * 持有份额
-     */
-    private BigDecimal shares;
 
 }
