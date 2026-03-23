@@ -6,7 +6,7 @@ import com.wen.model.entity.FundInfo;
  * @author : rjw
  * @date : 2026-03-20
  */
-public interface FundInfoService {
+public interface FundService {
 
     /**
      * 新增基金信息

@@ -10,8 +10,8 @@ import lombok.Data;
  * @Date: 2026/3/22 11:16
  */
 @Data
-@TableName("t_user_account")
-public class UserAccount {
+@TableName("t_account_info")
+public class AccountInfo {
 
     @TableId(type = IdType.AUTO)
     private Long id;

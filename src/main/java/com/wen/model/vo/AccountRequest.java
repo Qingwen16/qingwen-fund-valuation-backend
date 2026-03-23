@@ -7,7 +7,7 @@ import lombok.Data;
  * @Date: 2026/3/22 17:27
  */
 @Data
-public class AccountIdRequest {
+public class AccountRequest {
 
     /**
      * 用户ID
