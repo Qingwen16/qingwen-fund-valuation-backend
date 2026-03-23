@@ -6,10 +6,10 @@ import java.math.BigDecimal;
 
 /**
  * @Author : 青灯文案
- * @Date: 2026/3/22 13:01
+ * @Date: 2026/3/22 11:13
  */
 @Data
-public class FundHoldingRequest {
+public class SharesRequest {
 
     /**
      * 用户ID
@@ -22,29 +22,9 @@ public class FundHoldingRequest {
     private Long accountId;
 
     /**
-     * 基金名字
-     */
-    private String name;
-
-    /**
      * 基金代码
      */
     private String code;
-
-    /**
-     * 基金类型
-     */
-    private String type;
-
-    /**
-     * 基金公司
-     */
-    private String company;
-
-    /**
-     * 基金版块
-     */
-    private String section;
 
     /**
      * 持有份额

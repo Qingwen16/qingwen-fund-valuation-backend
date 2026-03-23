@@ -9,7 +9,6 @@ import lombok.Data;
  * @author : rjw
  * @date : 2026-03-12
  */
-
 @TableName("t_user_info")
 @Data
 public class UserInfo {

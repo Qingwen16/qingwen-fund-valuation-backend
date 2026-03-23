@@ -2,10 +2,11 @@ package com.wen.controller;
 
 import com.wen.common.exception.BusinessException;
 import com.wen.common.response.Response;
-import com.wen.model.entity.UserAccount;
+import com.wen.model.entity.AccountInfo;
 import com.wen.model.entity.UserInfo;
+import com.wen.model.vo.AccountRequest;
 import com.wen.model.vo.UserIdRequest;
-import com.wen.service.UserInfoService;
+import com.wen.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,9 +22,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/fund/valuation")
 @RequiredArgsConstructor
-public class UserInfoController {
+public class UserController {
 
-    private final UserInfoService userInfoService;
+    private final UserService userService;
 
     /**
      * 根据用户ID获取用户数据
@@ -33,7 +34,7 @@ public class UserInfoController {
         if (request == null) {
             throw new BusinessException("输入参数不能为空");
         }
-        UserInfo userInfo = userInfoService.queryUserInfo(request);
+        UserInfo userInfo = userService.queryUserInfo(request);
         return Response.success();
     }
 
@@ -45,7 +46,7 @@ public class UserInfoController {
         if (request == null) {
             throw new BusinessException("输入参数不能为空");
         }
-        userInfoService.deleteUserInfo(request);
+        userService.deleteUserInfo(request);
         return Response.success();
     }
 
@@ -53,23 +54,23 @@ public class UserInfoController {
      * 根据用户ID获取用户账户信息
      */
     @PostMapping("/queryUserAccount")
-    public Response<List<UserAccount>> queryUserAccount(@RequestBody UserIdRequest request) {
+    public Response<List<AccountInfo>> queryUserAccount(@RequestBody UserIdRequest request) {
         if (request == null) {
             throw new BusinessException("输入参数不能为空");
         }
-        List<UserAccount> userAccounts = userInfoService.queryUserAccount(request);
-        return Response.success(userAccounts);
+        List<AccountInfo> accountInfoList = userService.queryUserAccount(request);
+        return Response.success(accountInfoList);
     }
 
     /**
      * 根据用户ID删除用户账户信息
      */
     @PostMapping("/deleteUserAccount")
-    public Response<?> deleteUserAccount(@RequestBody PositionDecreaseRequest request) {
+    public Response<?> deleteUserAccount(@RequestBody AccountRequest request) {
         if (request == null) {
             throw new BusinessException("输入参数不能为空");
         }
-        userInfoService.deleteUserAccount(request);
+        userService.deleteUserAccount(request);
         return Response.success();
     }
 

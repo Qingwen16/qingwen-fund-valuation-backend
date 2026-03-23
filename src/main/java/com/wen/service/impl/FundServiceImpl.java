@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.wen.common.exception.BusinessException;
 import com.wen.mapper.FundInfoMapper;
 import com.wen.model.entity.FundInfo;
-import com.wen.service.FundInfoService;
+import com.wen.service.FundService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class FundInfoServiceImpl implements FundInfoService {
+public class FundServiceImpl implements FundService {
 
     private final FundInfoMapper fundInfoMapper;
 
