@@ -1,17 +1,15 @@
 package com.wen.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wen.common.constant.AuthConstants;
 import com.wen.config.WxConfig;
-import com.wen.mapper.UserInfoMapper;
 import com.wen.model.entity.UserInfo;
 import com.wen.model.vo.WxLoginResponse;
 import com.wen.model.vo.WxSession;
-import com.wen.service.AuthService;
+import com.wen.service.AuthInfoService;
 import com.wen.service.CacheService;
+import com.wen.service.UserInfoService;
 import com.wen.utils.JwtUtil;
-import com.wen.utils.UserIdGenerator;
 import com.wen.utils.UserInfoContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,15 +26,15 @@ import java.util.Map;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class AuthServiceImpl implements AuthService {
+public class AuthInfoServiceImpl implements AuthInfoService {
 
     private final WxConfig wxConfig;
 
     private final JwtUtil jwtUtil;
 
-    private final UserInfoMapper userInfoMapper;
-
     private final CacheService cacheService;
+
+    private final UserInfoService userInfoService;
 
     private final RestTemplate restTemplate = new RestTemplate();
 
@@ -47,28 +45,26 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public WxLoginResponse login(String code) {
-        // Step 1: 调用微信接口换取 openid
+        // 0. 调用微信接口换取 openid
         WxSession wxSession = getWxSession(code);
 
-        if (wxSession == null || wxSession.getOpenid() == null) {
-            throw new RuntimeException("微信登录失败，无法获取 openid");
+        if (wxSession == null || wxSession.getOpenid() == null || wxSession.getUnionid() == null) {
+            log.error("微信登录失败，无法获取 openid, 无法获取unionid: {}", wxSession);
+            throw new RuntimeException("微信登录失败，无法获取 openid, 无法获取unionid");
         }
 
-        // Step 2: 查询用户，不存在则自动注册
-        LambdaQueryWrapper<UserInfo> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(UserInfo::getOpenid, wxSession.getOpenid());
-        UserInfo userInfo = userInfoMapper.selectOne(queryWrapper);
+        // 1. 登录成功，查询用户信息
+        UserInfo userInfo = userInfoService.queryUserInfoByOpenId(wxSession.getOpenid());
 
+        // 2. 不存在则自动注册用户信息和账户
         if (userInfo == null) {
-            userInfo = new UserInfo();
-            userInfo.setUserId(UserIdGenerator.generator());
-            userInfo.setOpenid(wxSession.getOpenid());
-            userInfo.setUnionid(wxSession.getUnionid());
-            userInfo.setCreateTime(System.currentTimeMillis());
-            userInfoMapper.insert(userInfo);
+            userInfo = userInfoService.registerUserByWxSession(wxSession);
+            userInfoService.createUserAccount(userInfo.getUserId(), "默认账户");
         }
 
+        // 3. 生成token
         String token = jwtUtil.generateToken(userInfo.getUserId(), userInfo.getOpenid());
+        cacheService.setUserToken(userInfo.getOpenid(), token);
 
         UserInfoContext.setUserInfo(userInfo);
 

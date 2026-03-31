@@ -19,4 +19,9 @@ public class AccountRequest {
      */
     private Long accountId;
 
+    /**
+     * 账户名
+     */
+    private String name;
+
 }

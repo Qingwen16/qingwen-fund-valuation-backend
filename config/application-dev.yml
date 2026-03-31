@@ -7,6 +7,10 @@ wx:
     app-id: your_wx_appid        # 替换为你的小程序 AppID
     app-secret: your_wx_secret   # 替换为你的小程序 AppSecret
 
+cache:
+  keyNameSpace: qingwen
+  defaultKeyVersion: v1
+
 spring:
   # 数据源配置
   datasource:
