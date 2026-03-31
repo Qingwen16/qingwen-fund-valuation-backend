@@ -28,48 +28,48 @@ public class RelationController {
     /**
      * 获取用户所有自选基金列表
      */
-    @PostMapping("/getUserWatchlistFunds")
-    public Response<List<FundWatchlistDto>> getUserWatchlistFunds(@RequestBody UserIdRequest request) {
+    @PostMapping("/queryUserWatchlistFunds")
+    public Response<List<FundWatchlistDto>> queryUserWatchlistFunds(@RequestBody UserIdRequest request) {
         if (request == null) {
             throw new BusinessException("输入参数不能为空");
         }
-        List<FundWatchlistDto> responses = relationService.getUserWatchlistFunds(request);
+        List<FundWatchlistDto> responses = relationService.queryUserWatchlistFunds(request);
         return Response.success(responses);
     }
 
     /**
      * 获取用户所有持有基金列表
      */
-    @PostMapping("/getUserHoldingFunds")
-    public Response<List<FundHoldingDto>> getUserHoldingFunds(@RequestBody AccountRequest request) {
+    @PostMapping("/queryUserHoldingFunds")
+    public Response<List<FundHoldingDto>> queryUserHoldingFunds(@RequestBody AccountRequest request) {
         if (request == null) {
             throw new BusinessException("输入参数不能为空");
         }
-        List<FundHoldingDto> responses = relationService.getUserHoldingFunds(request);
+        List<FundHoldingDto> responses = relationService.queryUserHoldingFunds(request);
         return Response.success(responses);
     }
 
     /**
      * 新增自选基金数据
      */
-    @PostMapping("/addWatchlistFund")
-    public Response<?> addWatchlistFund(@RequestBody FundWatchlistDto request) {
+    @PostMapping("/insertWatchlistFund")
+    public Response<?> insertWatchlistFund(@RequestBody FundWatchlistDto request) {
         if (request == null) {
             throw new BusinessException("输入参数不能为空");
         }
-        relationService.addWatchlistFund(request);
+        relationService.insertWatchlistFund(request);
         return Response.success();
     }
 
     /**
      * 新增持有基金数据
      */
-    @PostMapping("/addHoldingFund")
-    public Response<?> addHoldingFund(@RequestBody FundHoldingDto request) {
+    @PostMapping("/insertHoldingFund")
+    public Response<?> insertHoldingFund(@RequestBody FundHoldingDto request) {
         if (request == null) {
             throw new BusinessException("输入参数不能为空");
         }
-        relationService.addHoldingFund(request);
+        relationService.insertHoldingFund(request);
         return Response.success();
     }
 

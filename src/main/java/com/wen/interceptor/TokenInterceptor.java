@@ -6,7 +6,7 @@ package com.wen.interceptor;
  */
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.wen.service.AuthService;
+import com.wen.service.AuthInfoService;
 import com.wen.service.CacheService;
 import com.wen.utils.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,7 +31,7 @@ public class TokenInterceptor implements HandlerInterceptor {
 
     private final JwtUtil jwtUtil;
 
-    private final AuthService authService;
+    private final AuthInfoService authInfoService;
 
     private final CacheService cacheService;
 

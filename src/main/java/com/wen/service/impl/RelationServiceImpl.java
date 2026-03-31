@@ -10,10 +10,11 @@ import com.wen.model.dto.FundWatchlistDto;
 import com.wen.model.entity.FundHolding;
 import com.wen.model.entity.FundInfo;
 import com.wen.model.entity.FundWatchlist;
-import com.wen.model.vo.*;
-import com.wen.service.FundService;
+import com.wen.model.vo.AccountRequest;
+import com.wen.model.vo.UserIdRequest;
+import com.wen.service.FundInfoService;
 import com.wen.service.RelationService;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,27 +27,27 @@ import java.util.stream.Collectors;
 
 /**
  * @author : rjw
- * @date : 2026-03-20
+ * @date : 2026-03-31
  */
 @Service
 @Slf4j
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class RelationServiceImpl implements RelationService {
 
-    private final FundService fundService;
+    private final FundInfoService fundInfoService;
+
+    private final FundInfoMapper fundInfoMapper;
 
     private final FundHoldingMapper fundHoldingMapper;
 
     private final FundWatchlistMapper fundWatchlistMapper;
-
-    private final FundInfoMapper fundInfoMapper;
 
     /**
      * 获取用户自选基金
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public List<FundWatchlistDto> getUserWatchlistFunds(UserIdRequest request) {
+    public List<FundWatchlistDto> queryUserWatchlistFunds(UserIdRequest request) {
         // 1. 获取用户自选基金
         if (request.getUserId() == null) {
             throw new BusinessException("[GetUserWatchlistFunds]: 输入参数用户ID为空");
@@ -85,12 +86,9 @@ public class RelationServiceImpl implements RelationService {
         return responseList;
     }
 
-    /**
-     * 获取用户持有基金
-     */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public List<FundHoldingDto> getUserHoldingFunds(AccountRequest request) {
+    public List<FundHoldingDto> queryUserHoldingFunds(AccountRequest request) {
         // 1. 校验用户账户信息
         if (request.getUserId() == null || request.getAccountId() == null) {
             throw new BusinessException("[GetUserHoldingFunds]: 输入参数用户ID为空 或 账户ID为空");
@@ -132,38 +130,47 @@ public class RelationServiceImpl implements RelationService {
         return responseList;
     }
 
-    /**
-     * 添加自选基金
-     */
     @Override
-    @Transactional(rollbackFor = Exception.class)
-    public void addWatchlistFund(FundWatchlistDto request) {
-        if (request.getUserId() == null || request.getCode() == null) {
-            throw new BusinessException("AddSelectionFund：输入参数用户ID为空或者基金code为空");
-        }
-        long currentTime = System.currentTimeMillis();
-        log.info("新增自选基金：[{}]", request);
-        // 1. 构建基金实体类
-        FundInfo fundInfo = new FundInfo();
-        fundInfo.setName(request.getName());
-        fundInfo.setCode(request.getCode());
-        fundInfo.setType(request.getType());
-        fundInfo.setCompany(request.getCompany());
-        fundInfo.setSection(request.getSection());
-        fundInfo.setCreateTime(currentTime);
-        // 2、基金入库
-        fundService.insertFundInfo(fundInfo);
-        // 3. 写入用户基金关系表
+    public boolean existsWatchlistFund(FundWatchlistDto request) {
         LambdaQueryWrapper<FundWatchlist> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(FundWatchlist::getUserId, request.getUserId());
         wrapper.eq(FundWatchlist::getCode, request.getCode());
-        if (fundWatchlistMapper.selectOne(wrapper) != null) {
-            throw new BusinessException("AddSelectionFund：用户自选基金关系已存在");
+        Long count = fundWatchlistMapper.selectCount(wrapper);
+        return count != null && count > 0;
+    }
+
+    @Override
+    public boolean existsHoldingFund(FundHoldingDto request) {
+        LambdaQueryWrapper<FundHolding> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(FundHolding::getUserId, request.getUserId());
+        wrapper.eq(FundHolding::getAccountId, request.getAccountId());
+        wrapper.eq(FundHolding::getCode, request.getCode());
+        Long count = fundHoldingMapper.selectCount(wrapper);
+        return count != null && count > 0;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void insertWatchlistFund(FundWatchlistDto request) {
+        if (request.getUserId() == null || request.getCode() == null) {
+            log.error("InsertHoldingFund：关键参数存在空值, [{}]", request);
+            throw new BusinessException("AddHoldingFund：关键参数存在空值");
         }
+        log.info("新增自选基金：[{}]", request);
+        // 1. 基金入库
+        if (!fundInfoService.existsFundInfo(request.getCode())) {
+            fundInfoService.insertFundInfo(request);
+        }
+        // 2. 写入用户基金关系表
+        if (existsWatchlistFund(request)) {
+            log.info("新增自选基金：用户自选基金关系已存在：[{}]", request);
+            return;
+        }
+        // 3. 构建用户自选基金关系
         FundWatchlist fundWatchlist = new FundWatchlist();
         fundWatchlist.setUserId(request.getUserId());
         fundWatchlist.setCode(request.getCode());
-        fundWatchlist.setCreateTime(currentTime);
+        fundWatchlist.setCreateTime(System.currentTimeMillis());
         fundWatchlistMapper.insert(fundWatchlist);
         log.info("新增自选基金：新增用户基金关系：[{}]", fundWatchlist);
     }
@@ -172,40 +179,42 @@ public class RelationServiceImpl implements RelationService {
      * 添加持有基金
      */
     @Override
-    public void addHoldingFund(FundHoldingDto request) {
-        if (request.getUserId() == null|| request.getCode() == null || request.getShares() == null) {
-            log.error("AddHoldingFund：输入参数: 用户ID为空 或 基金code为空 或 基金份额为空, [{}]",  request);
-            throw new BusinessException("AddHoldingFund：输入参数: 用户ID为空 或 基金code为空 或 基金份额为空");
+    public void insertHoldingFund(FundHoldingDto request) {
+        if (request.getUserId() == null || request.getAccountId() == null ||
+                request.getCode() == null || request.getShares() == null) {
+            log.error("InsertHoldingFund：关键参数存在空值, [{}]", request);
+            throw new BusinessException("AddHoldingFund：关键参数存在空值");
         }
-        long currentTime = System.currentTimeMillis();
         log.info("新增持有基金：[{}]", request);
-        // 1. 构建基金实体类
-        FundInfo fundInfo = new FundInfo();
-        fundInfo.setName(request.getName());
-        fundInfo.setCode(request.getCode());
-        fundInfo.setType(request.getType());
-        fundInfo.setCompany(request.getCompany());
-        fundInfo.setSection(request.getSection());
-        fundInfo.setCreateTime(currentTime);
-        // 2、基金入库
-        fundService.insertFundInfo(fundInfo);
-        // 3. 写入用户基金关系表
-        LambdaQueryWrapper<FundHolding> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(FundHolding::getUserId, request.getUserId());
-        wrapper.eq(FundHolding::getAccountId, request.getAccountId());
-        wrapper.eq(FundHolding::getCode, request.getCode());
-        if (fundHoldingMapper.selectOne(wrapper) != null) {
-            throw new BusinessException("AddSelectionFund：用户自选基金关系已存在");
+        // 1. 基金入库
+        if (!fundInfoService.existsFundInfo(request.getCode())) {
+            fundInfoService.insertFundInfo(request);
         }
+        // 2. 写入用户基金关系表
+        if (existsHoldingFund(request)) {
+            log.info("新增持有基金：用户自持有基金关系已存在：[{}]", request);
+            return;
+        }
+        // 3. 构建用户持有基金关系
         FundHolding fundHolding = new FundHolding();
         fundHolding.setUserId(request.getUserId());
         fundHolding.setAccountId(request.getAccountId());
         fundHolding.setShares(request.getShares());
         fundHolding.setCode(request.getCode());
-        fundHolding.setUpdateTime(currentTime);
-        fundHolding.setCreateTime(currentTime);
+        fundHolding.setUpdateTime(System.currentTimeMillis());
+        fundHolding.setCreateTime(System.currentTimeMillis());
         fundHoldingMapper.insert(fundHolding);
         log.info("新增自选基金：新增用户基金关系：[{}]", fundHolding);
+    }
+
+    @Override
+    public void deleteWatchlistFund(FundWatchlistDto request) {
+
+    }
+
+    @Override
+    public void deleteHoldingFund(FundHoldingDto request) {
+
     }
 
 }

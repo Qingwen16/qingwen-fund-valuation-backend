@@ -4,7 +4,7 @@ import com.wen.common.exception.BusinessException;
 import com.wen.common.response.Response;
 import com.wen.model.vo.WxLoginRequest;
 import com.wen.model.vo.WxLoginResponse;
-import com.wen.service.AuthService;
+import com.wen.service.AuthInfoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,16 +15,16 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/fund/valuation/auth")
 @RequiredArgsConstructor
-public class AuthController {
+public class AuthInfoController {
 
-    private final AuthService authService;
+    private final AuthInfoService authInfoService;
 
     @PostMapping("/login")
     public Response<?> login(@RequestBody WxLoginRequest request) {
         if (request == null) {
             throw new BusinessException("输入参数不能为空");
         }
-        WxLoginResponse response = authService.login(request.getCode());
+        WxLoginResponse response = authInfoService.login(request.getCode());
         return Response.success(response);
     }
 
@@ -33,7 +33,7 @@ public class AuthController {
      */
     @PostMapping("/logout")
     public Response<?> logout() {
-        authService.logout();
+        authInfoService.logout();
         return Response.success("Ok");
     }
 

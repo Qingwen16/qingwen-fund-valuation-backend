@@ -6,7 +6,7 @@ import com.wen.model.vo.WxLoginResponse;
  * @author : rjw
  * @date : 2026-03-20
  */
-public interface AuthService {
+public interface AuthInfoService {
 
     /**
      * 微信用户登录

@@ -6,7 +6,7 @@ import com.wen.model.entity.AccountInfo;
 import com.wen.model.entity.UserInfo;
 import com.wen.model.vo.AccountRequest;
 import com.wen.model.vo.UserIdRequest;
-import com.wen.service.UserService;
+import com.wen.service.UserInfoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,20 +22,20 @@ import java.util.List;
 @RestController
 @RequestMapping("/fund/valuation")
 @RequiredArgsConstructor
-public class UserController {
+public class UserInfoController {
 
-    private final UserService userService;
+    private final UserInfoService userInfoService;
 
     /**
      * 根据用户ID获取用户数据
      */
     @PostMapping("/queryUserInfo")
     public Response<UserInfo> queryUserInfo(@RequestBody UserIdRequest request) {
-        if (request == null) {
-            throw new BusinessException("输入参数不能为空");
+        if (request == null || request.getUserId() == null) {
+            throw new BusinessException("输入参数不能为空或用户参数ID不能为空");
         }
-        UserInfo userInfo = userService.queryUserInfo(request);
-        return Response.success();
+        UserInfo userInfo = userInfoService.queryUserByUserId(request.getUserId());
+        return Response.success(userInfo);
     }
 
     /**
@@ -43,10 +43,10 @@ public class UserController {
      */
     @PostMapping("/deleteUserInfo")
     public Response<?> deleteUserInfo(@RequestBody UserIdRequest request) {
-        if (request == null) {
-            throw new BusinessException("输入参数不能为空");
+        if (request == null || request.getUserId() == null) {
+            throw new BusinessException("输入参数不能为空或用户参数ID不能为空");
         }
-        userService.deleteUserInfo(request);
+        userInfoService.deleteUserInfo(request.getUserId());
         return Response.success();
     }
 
@@ -54,12 +54,24 @@ public class UserController {
      * 根据用户ID获取用户账户信息
      */
     @PostMapping("/queryUserAccount")
-    public Response<List<AccountInfo>> queryUserAccount(@RequestBody UserIdRequest request) {
+    public Response<List<AccountInfo>> queryUserAccount(@RequestBody AccountRequest request) {
         if (request == null) {
             throw new BusinessException("输入参数不能为空");
         }
-        List<AccountInfo> accountInfoList = userService.queryUserAccount(request);
+        List<AccountInfo> accountInfoList = userInfoService.queryUserAccount(request);
         return Response.success(accountInfoList);
+    }
+
+    /**
+     * 根据用户ID更新用户账户信息
+     */
+    @PostMapping("/updateUserAccount")
+    public Response<?> updateUserAccount(@RequestBody AccountRequest request) {
+        if (request == null) {
+            throw new BusinessException("输入参数不能为空");
+        }
+        userInfoService.updateUserAccount(request);
+        return Response.success();
     }
 
     /**
@@ -70,7 +82,7 @@ public class UserController {
         if (request == null) {
             throw new BusinessException("输入参数不能为空");
         }
-        userService.deleteUserAccount(request);
+        userInfoService.deleteUserAccount(request);
         return Response.success();
     }
 
