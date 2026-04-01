@@ -8,7 +8,6 @@ import com.wen.mapper.AccountInfoMapper;
 import com.wen.mapper.UserInfoMapper;
 import com.wen.model.entity.AccountInfo;
 import com.wen.model.entity.UserInfo;
-import com.wen.model.vo.AccountRequest;
 import com.wen.model.vo.WxSession;
 import com.wen.service.UserInfoService;
 import com.wen.utils.UserIdGenerator;
@@ -88,41 +87,29 @@ public class UserInfoServiceImpl implements UserInfoService {
     }
 
     @Override
-    public List<AccountInfo> queryUserAccount(AccountRequest request) {
-        if (request.getUserId() == null) {
-            log.error("输入参数存在空值: [{}]", request);
-            throw new BusinessException("输入参数存在空值");
-        }
+    public List<AccountInfo> queryUserAccount(long userId) {
         LambdaQueryWrapper<AccountInfo> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(AccountInfo::getUserId, request.getUserId());
+        wrapper.eq(AccountInfo::getUserId, userId);
         List<AccountInfo> accountInfoList = accountInfoMapper.selectList(wrapper);
         log.info("QueryUserAccount：根据用户ID获取用户账户信息成功: {}", accountInfoList.size());
         return accountInfoList;
     }
 
     @Override
-    public void updateUserAccount(AccountRequest request) {
-        if (request.getUserId() == null || request.getAccountId() == null || StrUtil.isEmpty(request.getName())) {
-            log.error("输入参数存在空值: [{}]", request);
-            throw new BusinessException("输入参数存在空值");
-        }
+    public void updateUserAccount(long userId, long accountId, String name) {
         LambdaUpdateWrapper<AccountInfo> wrapper = new LambdaUpdateWrapper<>();
-        wrapper.eq(AccountInfo::getId, request.getAccountId());
-        wrapper.eq(AccountInfo::getUserId, request.getUserId());
-        wrapper.set(AccountInfo::getName, request.getName());
+        wrapper.eq(AccountInfo::getId, userId);
+        wrapper.eq(AccountInfo::getUserId, accountId);
+        wrapper.set(AccountInfo::getName, name);
         accountInfoMapper.update(wrapper);
-        log.info("UpdateUserAccount：修改用户账户信息成功, uid: {}, accountId: {}, name: {}",
-                request.getUserId(), request.getAccountId(), request.getName());
+        log.info("UpdateUserAccount：修改用户账户信息成功, userId: {}, accountId: {}, name: {}",
+                userId, accountId, name);
     }
 
     @Override
-    public void deleteUserAccount(AccountRequest request) {
-        if (request.getUserId() == null || request.getAccountId() == null) {
-            log.error("输入参数存在空值: [{}]", request);
-            throw new BusinessException("输入参数存在空值");
-        }
-        accountInfoMapper.deleteById(request.getAccountId());
-        log.info("DeleteUserAccount：根据用户ID获取用户账户信息成功: {}", request.getAccountId());
+    public void deleteUserAccount(long accountId) {
+        accountInfoMapper.deleteById(accountId);
+        log.info("DeleteUserAccount：根据用户ID获取用户账户信息成功: {}", accountId);
     }
 }
 

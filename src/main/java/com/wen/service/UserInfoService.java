@@ -2,7 +2,6 @@ package com.wen.service;
 
 import com.wen.model.entity.AccountInfo;
 import com.wen.model.entity.UserInfo;
-import com.wen.model.vo.AccountRequest;
 import com.wen.model.vo.WxSession;
 
 import java.util.List;
@@ -41,15 +40,15 @@ public interface UserInfoService {
     /**
      * 获取用户账户信息
      */
-    List<AccountInfo> queryUserAccount(AccountRequest request);
+    List<AccountInfo> queryUserAccount(long userId);
 
     /**
      * 修改用户账户信息
      */
-    void updateUserAccount(AccountRequest request);
+    void updateUserAccount(long userId, long accountId, String name);
 
     /**
      * 删除用户账户信息
      */
-    void deleteUserAccount(AccountRequest request);
+    void deleteUserAccount(long accountId);
 }

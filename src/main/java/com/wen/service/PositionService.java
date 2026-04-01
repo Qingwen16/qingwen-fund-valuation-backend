@@ -1,6 +1,6 @@
 package com.wen.service;
 
-import com.wen.model.vo.SharesRequest;
+import com.wen.model.vo.PositionRequest;
 
 /**
  * @author : rjw
@@ -11,15 +11,15 @@ public interface PositionService {
     /**
      * 修改持仓
      */
-    void changePosition(SharesRequest request);
+    void updatePosition(PositionRequest request);
 
     /**
      * 增加持仓
      */
-    void increasePosition(SharesRequest request);
+    void increasePosition(PositionRequest request);
 
     /**
      * 减少持仓
      */
-    void decreasePosition(SharesRequest request);
+    void decreasePosition(PositionRequest request);
 }

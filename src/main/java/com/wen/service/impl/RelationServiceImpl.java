@@ -2,16 +2,17 @@ package com.wen.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.wen.common.exception.BusinessException;
+import com.wen.mapper.AccountInfoMapper;
 import com.wen.mapper.FundHoldingMapper;
 import com.wen.mapper.FundInfoMapper;
 import com.wen.mapper.FundWatchlistMapper;
 import com.wen.model.dto.FundHoldingDto;
 import com.wen.model.dto.FundWatchlistDto;
+import com.wen.model.entity.AccountInfo;
 import com.wen.model.entity.FundHolding;
 import com.wen.model.entity.FundInfo;
 import com.wen.model.entity.FundWatchlist;
-import com.wen.model.vo.AccountRequest;
-import com.wen.model.vo.UserIdRequest;
+import com.wen.model.vo.HoldingResponse;
 import com.wen.service.FundInfoService;
 import com.wen.service.RelationService;
 import lombok.AllArgsConstructor;
@@ -38,6 +39,8 @@ public class RelationServiceImpl implements RelationService {
 
     private final FundInfoMapper fundInfoMapper;
 
+    private final AccountInfoMapper accountInfoMapper;
+
     private final FundHoldingMapper fundHoldingMapper;
 
     private final FundWatchlistMapper fundWatchlistMapper;
@@ -46,34 +49,29 @@ public class RelationServiceImpl implements RelationService {
      * 获取用户自选基金
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
-    public List<FundWatchlistDto> queryUserWatchlistFunds(UserIdRequest request) {
+    public List<FundWatchlistDto> queryWatchlistList(long userId) {
         // 1. 获取用户自选基金
-        if (request.getUserId() == null) {
-            throw new BusinessException("[GetUserWatchlistFunds]: 输入参数用户ID为空");
-        }
-        // 2. 获取用户自选基金对应的基金信息
         LambdaQueryWrapper<FundWatchlist> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(FundWatchlist::getUserId, request.getUserId());
-        List<FundWatchlist> watchlistList = fundWatchlistMapper.selectList(wrapper);
-        // 3. 提取基金代码
-        Set<String> codeSet = watchlistList.stream().map(FundWatchlist::getCode).collect(Collectors.toSet());
-        // 4. 获取用户自选基金对应的基金信息
-        List<FundInfo> fundInfoList = fundInfoMapper.selectList(new LambdaQueryWrapper<FundInfo>()
+        wrapper.eq(FundWatchlist::getUserId, userId);
+        List<FundWatchlist> watchlist = fundWatchlistMapper.selectList(wrapper);
+        // 2. 提取基金代码
+        Set<String> codeSet = watchlist.stream().map(FundWatchlist::getCode).collect(Collectors.toSet());
+        // 3. 获取用户自选基金对应的基金信息
+        List<FundInfo> fundList = fundInfoMapper.selectList(new LambdaQueryWrapper<FundInfo>()
                 .in(FundInfo::getCode, codeSet));
-        // 5. 构建基金信息
-        List<FundWatchlistDto> responseList = buildUserWatchlistFunds(watchlistList, fundInfoList);
+        // 4. 构建基金信息
+        List<FundWatchlistDto> responseList = buildWatchlistFunds(watchlist, fundList);
         log.info("获取用户自选基金: 基金数量: [{}]", responseList.size());
         return responseList;
     }
 
-    private List<FundWatchlistDto> buildUserWatchlistFunds(List<FundWatchlist> watchlistList, List<FundInfo> fundInfoList) {
+    private List<FundWatchlistDto> buildWatchlistFunds(List<FundWatchlist> watchlist, List<FundInfo> fundList) {
         List<FundWatchlistDto> responseList = new ArrayList<>();
-        for (FundWatchlist watchlist : watchlistList) {
-            for (FundInfo fundInfo : fundInfoList) {
-                if (Objects.equals(fundInfo.getCode(), watchlist.getCode())) {
+        for (FundWatchlist item : watchlist) {
+            for (FundInfo fundInfo : fundList) {
+                if (Objects.equals(fundInfo.getCode(), item.getCode())) {
                     FundWatchlistDto resp = new FundWatchlistDto();
-                    resp.setUserId(watchlist.getUserId());
+                    resp.setUserId(item.getUserId());
                     resp.setName(fundInfo.getName());
                     resp.setCode(fundInfo.getCode());
                     resp.setType(fundInfo.getType());
@@ -87,42 +85,52 @@ public class RelationServiceImpl implements RelationService {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
-    public List<FundHoldingDto> queryUserHoldingFunds(AccountRequest request) {
-        // 1. 校验用户账户信息
-        if (request.getUserId() == null || request.getAccountId() == null) {
-            throw new BusinessException("[GetUserHoldingFunds]: 输入参数用户ID为空 或 账户ID为空");
+    public List<HoldingResponse> queryHoldingList(long userId) {
+        // 1. 获取用户所有账户
+        LambdaQueryWrapper<AccountInfo> accountWrapper = new LambdaQueryWrapper<>();
+        accountWrapper.eq(AccountInfo::getUserId, userId);
+        List<AccountInfo> accountList = accountInfoMapper.selectList(accountWrapper);
+        // 2. 获取每个账户的持有基金
+        List<HoldingResponse> responses = new ArrayList<>();
+        for (AccountInfo accountInfo : accountList) {
+            HoldingResponse holdingResponse = new HoldingResponse();
+            List<FundHoldingDto> holdingList = getAccountTotalHoldingFunds(accountInfo);
+            holdingResponse.setAccountInfo(accountInfo);
+            holdingResponse.setHoldingList(holdingList);
+            responses.add(holdingResponse);
         }
-        // 2. 获取用户持有基金
+        log.info("获取用户持有基金: 基金信息: [{}]", responses);
+        return responses;
+    }
+
+    private List<FundHoldingDto> getAccountTotalHoldingFunds(AccountInfo accountInfo) {
         LambdaQueryWrapper<FundHolding> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(FundHolding::getUserId, request.getUserId());
-        wrapper.eq(FundHolding::getAccountId, request.getAccountId());
-        List<FundHolding> holdingList = fundHoldingMapper.selectList(wrapper);
-        // 3. 获取用户持有基金的代码
-        Set<String> codeSet = holdingList.stream().map(FundHolding::getCode).collect(Collectors.toSet());
-        // 4. 获取用户持有基金对应的基金信息
-        List<FundInfo> fundInfoList = fundInfoMapper.selectList(new LambdaQueryWrapper<FundInfo>()
+        wrapper.eq(FundHolding::getUserId, accountInfo.getUserId());
+        wrapper.eq(FundHolding::getAccountId, accountInfo.getId());
+        List<FundHolding> holdings = fundHoldingMapper.selectList(wrapper);
+        // 2. 获取用户持有基金的代码
+        Set<String> codeSet = holdings.stream().map(FundHolding::getCode).collect(Collectors.toSet());
+        // 3. 获取用户持有基金对应的基金信息
+        List<FundInfo> fundList = fundInfoMapper.selectList(new LambdaQueryWrapper<FundInfo>()
                 .in(FundInfo::getCode, codeSet));
-        // 5. 构建基金信息
-        List<FundHoldingDto> responseList = buildUserHoldingFunds(holdingList, fundInfoList);
-        log.info("获取用户持有基金: 基金数量: [{}]", responseList.size());
-        return responseList;
+        // 4. 构建基金信息
+        return buildHoldingFunds(holdings, fundList);
     }
 
-    private List<FundHoldingDto> buildUserHoldingFunds(List<FundHolding> holdingList, List<FundInfo> fundInfoList) {
+    private List<FundHoldingDto> buildHoldingFunds(List<FundHolding> holdings, List<FundInfo> fundList) {
         List<FundHoldingDto> responseList = new ArrayList<>();
-        for (FundHolding holding : holdingList) {
-            for (FundInfo fundInfo : fundInfoList) {
-                if (Objects.equals(fundInfo.getCode(), holding.getCode())) {
+        for (FundHolding item : holdings) {
+            for (FundInfo fundInfo : fundList) {
+                if (Objects.equals(fundInfo.getCode(), item.getCode())) {
                     FundHoldingDto resp = new FundHoldingDto();
-                    resp.setUserId(holding.getUserId());
-                    resp.setAccountId(holding.getAccountId());
+                    resp.setUserId(item.getUserId());
+                    resp.setAccountId(item.getAccountId());
                     resp.setName(fundInfo.getName());
                     resp.setCode(fundInfo.getCode());
                     resp.setType(fundInfo.getType());
                     resp.setCompany(fundInfo.getCompany());
                     resp.setSection(fundInfo.getSection());
-                    resp.setShares(holding.getShares());
+                    resp.setUnits(item.getUnits());
                     responseList.add(resp);
                 }
             }
@@ -131,20 +139,20 @@ public class RelationServiceImpl implements RelationService {
     }
 
     @Override
-    public boolean existsWatchlistFund(FundWatchlistDto request) {
+    public boolean existsWatchlistFund(long userId, String code) {
         LambdaQueryWrapper<FundWatchlist> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(FundWatchlist::getUserId, request.getUserId());
-        wrapper.eq(FundWatchlist::getCode, request.getCode());
+        wrapper.eq(FundWatchlist::getUserId, userId);
+        wrapper.eq(FundWatchlist::getCode, code);
         Long count = fundWatchlistMapper.selectCount(wrapper);
         return count != null && count > 0;
     }
 
     @Override
-    public boolean existsHoldingFund(FundHoldingDto request) {
+    public boolean existsHoldingFund(long userId, long accountId, String code) {
         LambdaQueryWrapper<FundHolding> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(FundHolding::getUserId, request.getUserId());
-        wrapper.eq(FundHolding::getAccountId, request.getAccountId());
-        wrapper.eq(FundHolding::getCode, request.getCode());
+        wrapper.eq(FundHolding::getUserId, userId);
+        wrapper.eq(FundHolding::getAccountId, accountId);
+        wrapper.eq(FundHolding::getCode, code);
         Long count = fundHoldingMapper.selectCount(wrapper);
         return count != null && count > 0;
     }
@@ -162,7 +170,7 @@ public class RelationServiceImpl implements RelationService {
             fundInfoService.insertFundInfo(request);
         }
         // 2. 写入用户基金关系表
-        if (existsWatchlistFund(request)) {
+        if (existsWatchlistFund(request.getUserId(), request.getCode())) {
             log.info("新增自选基金：用户自选基金关系已存在：[{}]", request);
             return;
         }
@@ -181,7 +189,7 @@ public class RelationServiceImpl implements RelationService {
     @Override
     public void insertHoldingFund(FundHoldingDto request) {
         if (request.getUserId() == null || request.getAccountId() == null ||
-                request.getCode() == null || request.getShares() == null) {
+                request.getCode() == null || request.getUnits() == null) {
             log.error("InsertHoldingFund：关键参数存在空值, [{}]", request);
             throw new BusinessException("AddHoldingFund：关键参数存在空值");
         }
@@ -191,7 +199,7 @@ public class RelationServiceImpl implements RelationService {
             fundInfoService.insertFundInfo(request);
         }
         // 2. 写入用户基金关系表
-        if (existsHoldingFund(request)) {
+        if (existsHoldingFund(request.getUserId(), request.getAccountId(), request.getCode())) {
             log.info("新增持有基金：用户自持有基金关系已存在：[{}]", request);
             return;
         }
@@ -199,7 +207,7 @@ public class RelationServiceImpl implements RelationService {
         FundHolding fundHolding = new FundHolding();
         fundHolding.setUserId(request.getUserId());
         fundHolding.setAccountId(request.getAccountId());
-        fundHolding.setShares(request.getShares());
+        fundHolding.setUnits(request.getUnits());
         fundHolding.setCode(request.getCode());
         fundHolding.setUpdateTime(System.currentTimeMillis());
         fundHolding.setCreateTime(System.currentTimeMillis());
@@ -208,13 +216,22 @@ public class RelationServiceImpl implements RelationService {
     }
 
     @Override
-    public void deleteWatchlistFund(FundWatchlistDto request) {
-
+    public void deleteWatchlistFund(long userId, String code) {
+        LambdaQueryWrapper<FundWatchlist> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(FundWatchlist::getUserId, userId);
+        wrapper.eq(FundWatchlist::getCode, code);
+        fundWatchlistMapper.delete(wrapper);
+        log.info("DeleteWatchlistFund: 删除自选基金成功: [{}] [{}]", userId, code);
     }
 
     @Override
-    public void deleteHoldingFund(FundHoldingDto request) {
-
+    public void deleteHoldingFund(long userId, long accountId, String code) {
+        LambdaQueryWrapper<FundHolding> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(FundHolding::getUserId, userId);
+        wrapper.eq(FundHolding::getAccountId, accountId);
+        wrapper.eq(FundHolding::getCode, code);
+        fundHoldingMapper.delete(wrapper);
+        log.info("DeleteHoldingFund: 删除持有基金成功: [{}] [{}] [{}]", userId, accountId, code);
     }
 
 }

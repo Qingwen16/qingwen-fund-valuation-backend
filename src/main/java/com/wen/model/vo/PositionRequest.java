@@ -7,9 +7,10 @@ import java.math.BigDecimal;
 /**
  * @Author : 青灯文案
  * @Date: 2026/3/22 11:13
+ * 基金通常用 units，股票通常用 shares
  */
 @Data
-public class SharesRequest {
+public class PositionRequest {
 
     /**
      * 用户ID
@@ -27,8 +28,8 @@ public class SharesRequest {
     private String code;
 
     /**
-     * 持有份额
+     * 单位、份额、单元
      */
-    private BigDecimal shares;
+    private BigDecimal units;
 
 }
