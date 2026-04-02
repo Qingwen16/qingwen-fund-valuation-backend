@@ -50,6 +50,6 @@ public class FundHoldingDto {
     /**
      * 持有份额
      */
-    private BigDecimal shares;
+    private BigDecimal units;
 
 }

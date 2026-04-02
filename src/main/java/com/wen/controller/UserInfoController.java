@@ -1,17 +1,14 @@
 package com.wen.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.wen.common.exception.BusinessException;
 import com.wen.common.response.Response;
 import com.wen.model.entity.AccountInfo;
 import com.wen.model.entity.UserInfo;
-import com.wen.model.vo.AccountRequest;
-import com.wen.model.vo.UserIdRequest;
 import com.wen.service.UserInfoService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.apache.ibatis.annotations.Param;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -20,7 +17,6 @@ import java.util.List;
  * @date : 2026-03-20
  */
 @RestController
-@RequestMapping("/fund/valuation")
 @RequiredArgsConstructor
 public class UserInfoController {
 
@@ -29,61 +25,61 @@ public class UserInfoController {
     /**
      * 根据用户ID获取用户数据
      */
-    @PostMapping("/queryUserInfo")
-    public Response<UserInfo> queryUserInfo(@RequestBody UserIdRequest request) {
-        if (request == null || request.getUserId() == null) {
-            throw new BusinessException("输入参数不能为空或用户参数ID不能为空");
-        }
-        UserInfo userInfo = userInfoService.queryUserByUserId(request.getUserId());
+    @GetMapping("/queryUserInfo")
+    public Response<UserInfo> queryUserInfo(@Param("userId") Long userId) {
+        checkLongParam(userId);
+        UserInfo userInfo = userInfoService.queryUserByUserId(userId);
         return Response.success(userInfo);
     }
 
     /**
      * 根据用户ID获取用户数据
      */
-    @PostMapping("/deleteUserInfo")
-    public Response<?> deleteUserInfo(@RequestBody UserIdRequest request) {
-        if (request == null || request.getUserId() == null) {
-            throw new BusinessException("输入参数不能为空或用户参数ID不能为空");
-        }
-        userInfoService.deleteUserInfo(request.getUserId());
+    @GetMapping("/deleteUserInfo")
+    public Response<?> deleteUserInfo(@Param("userId") Long userId) {
+        checkLongParam(userId);
+        userInfoService.deleteUserInfo(userId);
         return Response.success();
     }
 
     /**
      * 根据用户ID获取用户账户信息
      */
-    @PostMapping("/queryUserAccount")
-    public Response<List<AccountInfo>> queryUserAccount(@RequestBody AccountRequest request) {
-        if (request == null) {
-            throw new BusinessException("输入参数不能为空");
-        }
-        List<AccountInfo> accountInfoList = userInfoService.queryUserAccount(request);
+    @GetMapping("/queryUserAccount")
+    public Response<List<AccountInfo>> queryUserAccount(@Param("userId") Long userId) {
+        checkLongParam(userId);
+        List<AccountInfo> accountInfoList = userInfoService.queryUserAccount(userId);
         return Response.success(accountInfoList);
     }
 
     /**
      * 根据用户ID更新用户账户信息
      */
-    @PostMapping("/updateUserAccount")
-    public Response<?> updateUserAccount(@RequestBody AccountRequest request) {
-        if (request == null) {
-            throw new BusinessException("输入参数不能为空");
+    @GetMapping("/updateUserAccount")
+    public Response<?> updateUserAccount(@Param("userId") Long userId,
+                                         @Param("accountId") Long accountId,
+                                         @Param("name") String name) {
+        if (userId == null || accountId == null || StrUtil.isEmpty(name)) {
+            throw new BusinessException("输入参数存在空值");
         }
-        userInfoService.updateUserAccount(request);
+        userInfoService.updateUserAccount(userId, accountId, name);
         return Response.success();
     }
 
     /**
      * 根据用户ID删除用户账户信息
      */
-    @PostMapping("/deleteUserAccount")
-    public Response<?> deleteUserAccount(@RequestBody AccountRequest request) {
-        if (request == null) {
-            throw new BusinessException("输入参数不能为空");
-        }
-        userInfoService.deleteUserAccount(request);
+    @GetMapping("/deleteUserAccount")
+    public Response<?> deleteUserAccount(@Param("accountId") Long accountId) {
+        checkLongParam(accountId);
+        userInfoService.deleteUserAccount(accountId);
         return Response.success();
+    }
+
+    private void checkLongParam(Long id) {
+        if (id == null) {
+            throw new BusinessException("输入参数存在空值");
+        }
     }
 
 }

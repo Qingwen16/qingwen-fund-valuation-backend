@@ -1,16 +1,15 @@
 package com.wen.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.wen.common.exception.BusinessException;
 import com.wen.common.response.Response;
 import com.wen.model.dto.FundWatchlistDto;
 import com.wen.model.dto.FundHoldingDto;
-import com.wen.model.vo.*;
+import com.wen.model.vo.HoldingResponse;
 import com.wen.service.RelationService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.apache.ibatis.annotations.Param;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -19,7 +18,6 @@ import java.util.List;
  * @date : 2026-03-20
  */
 @RestController
-@RequestMapping("/fund/valuation")
 @RequiredArgsConstructor
 public class RelationController {
 
@@ -27,30 +25,39 @@ public class RelationController {
 
     /**
      * 获取用户所有自选基金列表
+     *
+     * @param userId 用户ID
+     * @return 列表
      */
-    @PostMapping("/queryUserWatchlistFunds")
-    public Response<List<FundWatchlistDto>> queryUserWatchlistFunds(@RequestBody UserIdRequest request) {
-        if (request == null) {
-            throw new BusinessException("输入参数不能为空");
+    @GetMapping("/queryWatchlistList")
+    public Response<List<FundWatchlistDto>> queryWatchlistList(@Param("userId") Long userId) {
+        if (userId == null) {
+            throw new BusinessException("输入参数存在空值");
         }
-        List<FundWatchlistDto> responses = relationService.queryUserWatchlistFunds(request);
+        List<FundWatchlistDto> responses = relationService.queryWatchlistList(userId);
         return Response.success(responses);
     }
 
     /**
-     * 获取用户所有持有基金列表
+     * 获取用户所有持有基金列表（多账号）
+     *
+     * @param userId    用户ID
+     * @return 用户[账户[列表]]
      */
-    @PostMapping("/queryUserHoldingFunds")
-    public Response<List<FundHoldingDto>> queryUserHoldingFunds(@RequestBody AccountRequest request) {
-        if (request == null) {
-            throw new BusinessException("输入参数不能为空");
+    @GetMapping("/queryHoldingList")
+    public Response<List<HoldingResponse>> queryHoldingList(@Param("userId") Long userId) {
+        if (userId == null) {
+            throw new BusinessException("输入参数存在空值");
         }
-        List<FundHoldingDto> responses = relationService.queryUserHoldingFunds(request);
+        List<HoldingResponse> responses = relationService.queryHoldingList(userId);
         return Response.success(responses);
     }
 
     /**
      * 新增自选基金数据
+     *
+     * @param request 自选基金类
+     * @return 无
      */
     @PostMapping("/insertWatchlistFund")
     public Response<?> insertWatchlistFund(@RequestBody FundWatchlistDto request) {
@@ -62,7 +69,10 @@ public class RelationController {
     }
 
     /**
-     * 新增持有基金数据
+     * 新增自选基金数据
+     *
+     * @param request 持有基金类
+     * @return 无
      */
     @PostMapping("/insertHoldingFund")
     public Response<?> insertHoldingFund(@RequestBody FundHoldingDto request) {
@@ -70,6 +80,38 @@ public class RelationController {
             throw new BusinessException("输入参数不能为空");
         }
         relationService.insertHoldingFund(request);
+        return Response.success();
+    }
+
+    /**
+     * 取消自选基金数据
+     *
+     * @param userId 用户ID
+     * @param code   基金代码
+     */
+    @GetMapping("/deleteWatchlistFund")
+    public Response<?> deleteWatchlistFund(@Param("userId") Long userId, @Param("code") String code) {
+        if (userId == null || StrUtil.isEmpty(code)) {
+            throw new BusinessException("输入参数存在空值");
+        }
+        relationService.deleteWatchlistFund(userId, code);
+        return Response.success();
+    }
+
+    /**
+     * 取消持有基金数据
+     *
+     * @param userId    用户ID
+     * @param accountId 用户账户ID
+     * @param code      基金代码
+     */
+    @GetMapping("/deleteHoldingFund")
+    public Response<?> deleteHoldingFund(@Param("userId") Long userId, @Param("accountId") Long accountId,
+                                         @Param("code") String code) {
+        if (userId == null || accountId == null || StrUtil.isEmpty(code)) {
+            throw new BusinessException("输入参数存在空值");
+        }
+        relationService.deleteHoldingFund(userId, accountId, code);
         return Response.success();
     }
 

@@ -12,6 +12,9 @@ public interface FundInfoService {
 
     /**
      * 查询基金信息
+     *
+     * @param code 基金代码
+     * @return 用户信息
      */
     FundInfo queryFundInfo(String code);
 

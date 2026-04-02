@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 /**
  * @Author : 青灯文案
  * @Date: 2026/3/22 12:03
- * 持有基金（实际持仓）
+ * 持有基金（实际持仓）基金通常用 units，股票通常用 shares
  */
 @Data
 @TableName("t_fund_holding")
@@ -37,7 +37,7 @@ public class FundHolding {
     /**
      * 持有份额
      */
-    private BigDecimal shares;
+    private BigDecimal units;
 
     /**
      * 修改时间
